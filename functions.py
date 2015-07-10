@@ -8,10 +8,11 @@ from os.path import isfile, join
 from os import listdir, rename, makedirs
 
 class Functions:
-    def __init__(self, db, library, stage):
+    def __init__(self, db, library, stage, verbose):
         self.db = db
         self.library = library
         self.stage = stage
+        self.verbose = verbose
 
     def init_db(self):
         DBInit.init_db(self.db)
@@ -51,57 +52,57 @@ class Functions:
         item.delete();
     
     def process_staging(self):
-        process_staging(self.stage, self.library, self)
+        process_staging(self)
+    
+    def printv(self, message):
+        if self.verbose:
+            print(message)
 
 #Iterate through files and add to collections
-def process_staging(stage, library, functions):
+def process_staging(functions):
     #Get all files in staging directory
-    files = [ f for f in listdir(stage) if isfile(join(stage,f)) ]
+    files = [ f for f in listdir(functions.stage) if isfile(join(functions.stage,f)) ]
     for file in files:
         collection_id = -1
         collection_path = ""
         
         #List collections for user
-        print_collections()
+        functions.list_collections()
         print("N.  New Collection")
         print("File: {}".format(file))
-        val = input("Select collection to use: ")
+        val = input("Select collection to use (id): ")
         
         #Get or create selected collection
         if val == "N":
-            coll = create_collection(library)
+            coll = create_collection(functions.library, functions.db)
             collection_id = coll.id 
             collection_path = coll.path
         else:
-            usable_cols = [ c for c in collections if c.id == int(val) ]
-            if len(usable_cols) == 0:
-                print("Could not find collection with id {}!  Skipping file...".format(val))
-                continue
-            else:
-                collection_id = usable_cols[0].id 
-                collection_path = usable_cols[0].path
+            coll = Collection.get_by_id(functions.db, int(val))
+            collection_id = coll.id 
+            collection_path = coll.path
         
         #Assign name and move file
-        val = input("Enter a name for the item (if blank filename will be used): ") 
+        val = input("Enter a name for {} (if blank filename will be used): ".format(file)) 
         item_name = val
         if item_name == "":
             item_name = file
         item = Item(None, collection_id, item_name, file)
         
-        rename(join(stage, file), join(library, collection_path, file))
+        rename(join(functions.stage, file), join(functions.library, collection_path, file))
         
         #Persist
-        item.insert()
+        item.insert(functions.db)
 
     print("Staging processed!")
 
 #This needs to check for no path collisions.  For now, just make it work
-def create_collection(library):
+def create_collection(library, db):
     name = ""
     while name == "":
         name = input("Input a name for the collection: ");
     #Figure out how to make a directory here 
     makedirs(join(library,name), exist_ok=True)
     collection = Collection(None, name, name, int(time.time()))
-    collection.insert()
+    collection.insert(db)
     return collection

@@ -2,10 +2,11 @@
 import argparse
 from functions import Functions
 from scan_existing import DirectoryInit
-#from os import makedirs
+from os.path import join
+from os import makedirs
 
 parser = argparse.ArgumentParser(description="An assistant for your library (of files)")
-parser.add_argument("--lib_db", type=str, help="Specify library.db's location", default="library.db")
+parser.add_argument("--lib_db", type=str, help="Specify library.db's location", default=join('library', 'library.db'))
 parser.add_argument("--lib_dir", type=str, help="Specify the library directory", default="library")
 parser.add_argument("--stage_dir", type=str, help="Specify the staging directory", default="stage")
 parser.add_argument("--verbose", help="Set to verbose mode", action="store_true")
@@ -21,11 +22,11 @@ group.add_argument("-p", "--process", action="store_true", help="Process the sta
 
 args = parser.parse_args()
 
-functions = Functions(args.lib_db, args.lib_dir, args.stage_dir)
+functions = Functions(args.lib_db, args.lib_dir, args.stage_dir, args.verbose)
 
 #todo: Check existence of stage, library, and db
-#os.makedirs(args.lib_dir, exist_ok=True)
-#os.makedirs(args.stage_dir, exist_ok=True)
+makedirs(args.lib_dir, exist_ok=True)
+makedirs(args.stage_dir, exist_ok=True)
 
 functions.init_db()
 
