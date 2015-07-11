@@ -40,7 +40,7 @@ optional arguments:
 Perform the following
 ```
 pip install py2exe
-pip install readline
+pip install pyreadline
 pip install pywin32
 ```
 Then run
