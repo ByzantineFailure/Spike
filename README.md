@@ -36,3 +36,14 @@ optional arguments:
   
   -p, --process         Process the staging directory
 ```
+##Windows Build instructions
+Perform the following
+```
+pip install py2exe
+pip install readline
+pip install pywin32
+```
+Then run
+```
+python setup.py py2exe
+```
